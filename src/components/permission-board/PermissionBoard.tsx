@@ -434,7 +434,7 @@ export function PermissionBoard() {
 }
 
 function Header({ mode }: { mode: "safe" | "race" }) {
-  const subtitle = mode === "safe" ? "With permissions" : "Without permissions (race demo)";
+  const subtitle = mode === "safe" ? "With permissions" : "Without permissions";
   return (
     <header style={{ padding: "18px 16px 14px", borderBottom: "3px solid #1a1a1a", display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
       <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, letterSpacing: "-0.01em" }}>Permission board</h1>
@@ -472,7 +472,7 @@ function HowItWorksPanel({ open, onToggle, onStartTour }: { open: boolean; onTog
         <div style={{ marginTop: 10, fontSize: 13, lineHeight: 1.55, color: "#000" }}>
           <p style={{ margin: "0 0 8px", fontWeight: 600 }}>Setup first, then Run.</p>
           <p style={{ margin: "0 0 8px", color: "#7f1d1d" }}>
-            Curious what happens <em>without</em> locks? Flip the <strong>Race mode</strong> toggle below. Same code, no permissions, step the threads in any order and watch balances corrupt.
+            Curious what happens <em>without</em> locks? Flip the <strong>Without permissions mode</strong> toggle below. Same code, no permissions, step the threads in any order and watch variable values corrupt.
           </p>
           <ol style={{ margin: 0, paddingLeft: 24, display: "flex", flexDirection: "column", gap: 6, listStyleType: "decimal", listStylePosition: "outside" }}>
             <li>
@@ -481,7 +481,7 @@ function HowItWorksPanel({ open, onToggle, onStartTour }: { open: boolean; onTog
             <li>
               <strong>Permission board:</strong> Where permission tokens currently sit.
               <ul style={{ margin: "4px 0 0", paddingLeft: 18, display: "flex", flexDirection: "column", gap: 3, listStyleType: "disc", listStylePosition: "outside" }}>
-                <li><em>Setup — you choose each lock&apos;s contents:</em> drag Pa, Pb, Pc from the tray into the locks. Whatever you put in a lock becomes its invariant. The intended layout is Pa in Lock 1, Pb and Pc in Lock 2 — but try a different one: a thread only gets stuck when it later reads or writes a variable it never acquired, not at the lock itself.</li>
+                <li><em>Setup - you choose each lock&apos;s contents:</em> drag Pa, Pb, Pc from the tray into the locks. Whatever you put in a lock becomes its invariant.</li>
                 <li>A <strong>lock column</strong> header shows whether the lock is <strong>🔓 Free</strong> or <strong>🔒</strong> held by a thread. A lock is a mutex: <strong>lock(L)</strong> hands its <em>entire</em> contents to the thread in one move, and <strong>unlock(L)</strong> returns all of it. Only one thread can hold a lock at a time.</li>
                 <li>Click <strong>Start ▶</strong> to begin the run.</li>
                 <li><em>Run:</em> click a lock&apos;s token (or drag it), then click the thread cell to acquire the whole lock at once. Press <strong>Verify step</strong> to apply the active thread&apos;s next step.</li>
@@ -648,10 +648,10 @@ function RaceTimeline({ raceState, sectionNumber, onRunAll, onReset, isRunning }
     <section style={{ position: "relative", background: "#fff", border: "2px solid #1a1a1a", padding: "10px 14px 14px", boxShadow: "4px 4px 0 #1a1a1a" }}>
       <SectionNumber n={sectionNumber ?? 3} />
       <div style={{ marginBottom: 10, display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-        <h3 style={{ fontSize: 15, fontWeight: "bold", margin: 0, paddingLeft: 32 }}>Race timeline</h3>
+        <h3 style={{ fontSize: 15, fontWeight: "bold", margin: 0, paddingLeft: 32 }}>Timeline</h3>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {(() => { const d = isRunning || raceAllDone(raceState); return <button onClick={onRunAll} disabled={d} style={actionButton("primary", d)}>{isRunning ? "▶ Running…" : "▶ Run all"}</button>; })()}
-          <button onClick={onReset} disabled={isRunning} style={actionButton("destructive", isRunning)}>↻ Reset race</button>
+          <button onClick={onReset} disabled={isRunning} style={actionButton("destructive", isRunning)}>↻ Reset</button>
         </div>
       </div>
       <div style={{ position: "relative", overflowX: "auto" }}>
@@ -684,10 +684,10 @@ function RaceExplainer() {
             Without locks, each `a := a + k` is not atomic. The thread first <strong>reads</strong> the current value of <code>a</code> into a private register, then computes the new value, then <strong>writes</strong> it back.
           </p>
           <p style={{ margin: "0 0 8px" }}>
-            If two threads read <code>a = 100</code> before either writes, both will compute their result from the same starting snapshot. The thread that stores last overwrites the other&apos;s update — one of the two changes is <strong>lost</strong>.
+            If two threads read <code>a = 100</code> before either writes, both will compute their result from the same starting snapshot. The thread that stores last overwrites the other&apos;s update in which case one of the two changes is <strong>lost</strong>.
           </p>
           <p style={{ margin: 0 }}>
-            VerCors&apos; permission system prevents this: writing requires the full <code>Perm(x, write)</code> token, and two threads cannot both hold it. The Safe-mode view shows what the verified program guarantees.
+            VerCors&apos; permission system prevents this: writing requires the full <code>Perm(x, write)</code> token, and two threads cannot both hold it. With permissions mode view shows what the verified program guarantees.
           </p>
         </div>
       )}
@@ -706,7 +706,7 @@ function RaceOutcomeBanner({ raceState }: { raceState: RaceState }) {
       padding: "10px 14px 12px", boxShadow: "4px 4px 0 #1a1a1a",
     }}>
       <div style={{ fontSize: 14, fontWeight: 700, color: ok ? "#14532d" : "#7f1d1d", marginBottom: ok ? 0 : 6 }}>
-        {ok ? "✓ All threads done. Final balances match the expected outcome." : "⚠ All threads done. Balances are wrong."}
+        {ok ? "✓ All threads done. Final variable values match the expected outcome." : "⚠ All threads done. Variable values are wrong."}
       </div>
       {!ok && (
         <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -719,13 +719,13 @@ function RaceOutcomeBanner({ raceState }: { raceState: RaceState }) {
             );
           })}
           <div style={{ marginTop: 4, fontSize: 11.5, fontStyle: "italic", color: "#7f1d1d" }}>
-            Without locks, two threads can read the same value and overwrite each other&apos;s updates. Switch back to Safe mode to see how permissions make this impossible.
+            Without locks, two threads can read the same value and overwrite each other&apos;s updates. Switch back to With permissions mode to see how permissions make this impossible.
           </div>
         </div>
       )}
       {ok && (
         <div style={{ fontSize: 11.5, color: "#14532d", fontStyle: "italic", marginTop: 4 }}>
-          Lucky interleaving. Try Reset race and step in a different order to provoke a lost update.
+          Lucky interleaving. Try Reset and step in a different order to provoke a lost update.
         </div>
       )}
     </section>
